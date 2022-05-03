@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AssemblyName>OnlineStoreBackend.Api</AssemblyName>
+        <RootNamespace>OnlineStoreBackend.Api</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <PackageId>OnlineStoreBackend.Api</PackageId>
+        <Authors>OnlineStoreBackend.Api</Authors>
+        <Company>OnlineStoreBackend.Api</Company>
+        <Product>OnlineStoreBackend.Api</Product>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OnlineStoreBackend.Abstractions\OnlineStoreBackend.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Filters" />
+    </ItemGroup>
+
+</Project>
