@@ -1,7 +1,7 @@
-﻿using System.Text.Encodings.Web;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OnlineStoreBackend.Abstractions.Models;
 using OnlineStoreBackend.Abstractions.Models.Product;
+using OnlineStoreBackend.Abstractions.Services.Category;
 using OnlineStoreBackend.Abstractions.Services.Product;
 using static OnlineStoreBackend.Abstractions.Models.Result;
 
@@ -10,11 +10,13 @@ namespace OnlineStoreBackend.Services.Product;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly ILogger<ProductService> _logger;
 
-    public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
+    public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository, ILogger<ProductService> logger)
     {
         _productRepository = productRepository;
+        _categoryRepository = categoryRepository;
         _logger = logger;
     }
 
@@ -30,10 +32,16 @@ public class ProductService : IProductService
     {
         try
         {
-            // todo: check for catalogId existence
+            ProcessProductFields(dto);
+            var productExists = await _productRepository.ExistsByPath(dto.Path, ct);
+            if (productExists)
+                return Fail<string>($"Product with path '{dto.Path}' already exists");
+
+            var categoryExists = await _categoryRepository.ExistsById(dto.CategoryId, ct); 
+            if (!categoryExists)
+                return Fail<string>($"Category with id '{dto.Id}' not found");
 
             dto.UpdatedAt = DateTime.UtcNow;
-            ProcessProductFields(dto);
             var result = await _productRepository.Create(dto, ct);
             return Success(result);
         }
@@ -62,18 +70,26 @@ public class ProductService : IProductService
     {
         try
         {
-            var exists = await _productRepository.Exists(dto.Id, ct);
-            if (!exists) return Fail<bool>("Product not found");
+            var productById = await _productRepository.Get(dto.Id, ct);
+            if (productById is null) return Fail($"Product with id '{dto.Id}' not found");
+            
+            var productExists = dto.Path != productById.Path 
+                                && await _productRepository.Exists(dto.Id, dto.Path, ct);
+            if (!productExists) return Fail($"Product with path '{dto.Id}' already exists");
+            
+            var categoryExists = await _categoryRepository.ExistsById(dto.CategoryId, ct); 
+            if (!categoryExists)
+                return Fail($"Category with id '{dto.Id}' not found");
 
             dto.UpdatedAt = DateTime.UtcNow;
             ProcessProductFields(dto);
             await _productRepository.Update(dto, ct);
-            return Success(true);
+            return Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unable to update product with id '{Id}'", dto.Id);
-            return Fail<bool>(ex.Message);
+            return Fail(ex.Message);
         }
     }
 
@@ -81,16 +97,16 @@ public class ProductService : IProductService
     {
         try
         {
-            var exists = await _productRepository.Exists(id, ct);
-            if (!exists) return Fail<bool>("Product not found");
+            var exists = await _productRepository.ExistsById(id, ct);
+            if (!exists) return Fail("Product not found");
 
             await _productRepository.Delete(id, ct);
-            return Success(true);
+            return Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unable to delete product with id '{Id}'", id);
-            return Fail<bool>(ex.Message);
+            return Fail(ex.Message);
         }
     }
 }

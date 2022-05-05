@@ -39,15 +39,51 @@ public class ProductRepository : IProductRepository
 
     public async Task Delete(string id, CancellationToken ct)
     {
-        var req = new DeleteRequest("some-index", id);
-        var result = await _client.DeleteAsync(req, ct);
+        var result = await _client.DeleteAsync<ProductDto>(id, ct: ct);
         result.EnsureSuccess();
     }
 
-    public async Task<bool> Exists(string id, CancellationToken ct)
+    public async Task<bool> ExistsById(string id, CancellationToken ct)
     {
         var result = await _client.DocumentExistsAsync<ProductDto>(id, ct: ct);
-        result.EnsureSuccess();
         return result.Exists;
+    }
+
+    public async Task<bool> ExistsByPath(string path, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(x =>
+            x.Query(q =>
+                    q.Match(m =>
+                        m.Field(f => f.Path).Query(path)))
+                .Take(0), ct);
+        
+        result.EnsureSuccess();
+        return result.Total > 0;
+    }
+
+    public async Task<bool> ExistsByCategoryId(string categoryId, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(x =>
+            x.Query(q =>
+                    q.Match(m =>
+                        m.Field(f => f.CategoryId).Query(categoryId)))
+                .Take(0), ct);
+        
+        result.EnsureSuccess();
+        return result.Total > 0;
+    }
+
+    public async Task<bool> Exists(string id, string path, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(x =>
+            x.Query(q =>
+                q.Match(m =>
+                    m.Field(f => f.Id).Query(id))
+                && q.Match(m =>
+                    m.Field(f => f.Path).Query(path)))
+                .Take(0), ct);
+        
+        result.EnsureSuccess();
+        return result.Total > 0;
     }
 }

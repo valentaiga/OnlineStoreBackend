@@ -8,11 +8,13 @@ online store backend (REST API + Elastic)
 - Xunit
 
 # Goals:
-[x] CRUD: product  
-[ ] CRUD: category  
-[ ] Use elastic to search through all products  
-[ ] Create search endpoint to search through products&categories
-[ ] Unit integration tests
+- [x] CRUD: product
+- [x] CRUD: category
+- [ ] ~~Configure automapper~~ no need
+- [ ] Use elastic to search through all products
+- [ ] Create search endpoint to search through products&categories
+- [ ] Add localization (EN by default)
+- [ ] Unit integration tests
 
 ## May be sometime (think about realization)
 Facets, search by multiple facets    

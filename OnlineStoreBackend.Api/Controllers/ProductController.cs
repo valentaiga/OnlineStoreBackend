@@ -57,6 +57,6 @@ public class ProductController : ApiControllerBase
     public async Task<ActionResult<GetProductResponse>> Get(string id, CancellationToken ct)
     {
         var result = await _service.Get(id, ct);
-        return Process(result, x => new GetProductResponse { Result = result.Value });
+        return Process(result, x => new GetProductResponse { Result = new Product(result.Value) });
     }
 }

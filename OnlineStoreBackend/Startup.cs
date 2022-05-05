@@ -7,9 +7,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Nest;
 using OnlineStoreBackend.Abstractions.Configs;
+using OnlineStoreBackend.Abstractions.Models.Category;
 using OnlineStoreBackend.Abstractions.Models.Product;
+using OnlineStoreBackend.Abstractions.Services.Category;
 using OnlineStoreBackend.Abstractions.Services.Product;
 using OnlineStoreBackend.Middlewares;
+using OnlineStoreBackend.Services.Category;
 using OnlineStoreBackend.Services.Product;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
@@ -33,6 +36,8 @@ namespace OnlineStoreBackend
             // services
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICategoryService, CategoryService>();
             
             var elasticConfig = Configuration.GetSection("elasticConfig")
                 .Get<ElasticConfig>();
@@ -52,7 +57,9 @@ namespace OnlineStoreBackend
             {
                 var settings = new ConnectionSettings(new Uri(elasticConfig.Uri))
                     .DefaultMappingFor<ProductDto>(p => p
-                        .IndexName(elasticConfig.ProductsIndex));
+                        .IndexName(elasticConfig.ProductsIndex))
+                    .DefaultMappingFor<CategoryDto>(c => c
+                        .IndexName(elasticConfig.CategoryIndex));
                 return new ElasticClient(settings);
             });
             

@@ -8,5 +8,8 @@ public interface IProductRepository
     Task<ProductDto> Get(string id, CancellationToken ct);
     Task Update(ProductDto dto, CancellationToken ct);
     Task Delete(string id, CancellationToken ct);
-    Task<bool> Exists(string id, CancellationToken ct);
+    Task<bool> ExistsById(string id, CancellationToken ct);
+    Task<bool> ExistsByPath(string path, CancellationToken ct);
+    Task<bool> ExistsByCategoryId(string categoryId, CancellationToken ct);
+    Task<bool> Exists(string id, string path, CancellationToken ct);
 }
