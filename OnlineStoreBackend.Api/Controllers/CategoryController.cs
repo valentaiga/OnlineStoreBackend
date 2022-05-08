@@ -15,12 +15,13 @@ public class CategoryController : ApiControllerBase
         _service = service;
     }
 
-    [HttpPut]
+    [HttpPut("create")]
     public async Task<ActionResult<AddCategoryResponse>> Create(AddCategoryRequest request, CancellationToken ct)
     {
         var dto = new CategoryDto
         {
             Name = request.Name,
+            Description = request.Description,
             IsActive = request.IsActive,
             Parent = request.Parent,
             Path = request.Path
@@ -29,13 +30,14 @@ public class CategoryController : ApiControllerBase
         return Process(result, x => new AddCategoryResponse { Id = result.Value });
     }
 
-    [HttpPost]
+    [HttpPost("update/{id}")]
     public async Task<ActionResult> Update(string id, UpdateCategoryRequest request, CancellationToken ct)
     {
         var dto = new CategoryDto
         {
             Id = id,
             Name = request.Name,
+            Description = request.Description,
             IsActive = request.IsActive,
             Parent = request.Parent,
             Path = request.Path
@@ -44,7 +46,7 @@ public class CategoryController : ApiControllerBase
         return Process(result);
     }
 
-    [HttpDelete]
+    [HttpDelete("delete/{id}")]
     public async Task<ActionResult> Delete(string id, CancellationToken ct)
     {
         var result = await _service.Delete(id, ct);
@@ -56,5 +58,12 @@ public class CategoryController : ApiControllerBase
     {
         var result = await _service.Get(id, ct);
         return Process(result, x => new GetCategoryResponse { Result = new Category(result.Value) });
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<GetAllCategoriesResponse>> GetAll(CancellationToken ct)
+    {
+        var result = await _service.GetAll(ct);
+        return Process(result, x => new GetAllCategoriesResponse { Result = x.Value.Select(x => new Category(x)).ToArray() });
     }
 }

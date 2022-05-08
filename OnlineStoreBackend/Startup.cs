@@ -11,9 +11,11 @@ using OnlineStoreBackend.Abstractions.Models.Category;
 using OnlineStoreBackend.Abstractions.Models.Product;
 using OnlineStoreBackend.Abstractions.Services.Category;
 using OnlineStoreBackend.Abstractions.Services.Product;
+using OnlineStoreBackend.Abstractions.Services.Search;
 using OnlineStoreBackend.Middlewares;
 using OnlineStoreBackend.Services.Category;
 using OnlineStoreBackend.Services.Product;
+using OnlineStoreBackend.Services.Search;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 
@@ -38,6 +40,7 @@ namespace OnlineStoreBackend
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ISearchService, SearchService>();
             
             var elasticConfig = Configuration.GetSection("elasticConfig")
                 .Get<ElasticConfig>();

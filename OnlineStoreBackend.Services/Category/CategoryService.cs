@@ -103,4 +103,18 @@ public class CategoryService : ICategoryService
             return Fail(ex.Message);
         }
     }
+
+    public async Task<Result<CategoryDto[]>> GetAll(CancellationToken ct)
+    {
+        try
+        {
+            var result = await _categoryRepository.GetAll(ct);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unable to get all products");
+            return Fail<CategoryDto[]>(ex.Message);
+        }
+    }
 }

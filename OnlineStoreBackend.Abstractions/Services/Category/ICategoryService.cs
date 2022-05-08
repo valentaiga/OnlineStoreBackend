@@ -9,4 +9,5 @@ public interface ICategoryService
     Task<Result<CategoryDto>> Get(string id, CancellationToken ct);
     Task<Result> Update(CategoryDto dto, CancellationToken ct);
     Task<Result> Delete(string id, CancellationToken ct);
+    Task<Result<CategoryDto[]>> GetAll(CancellationToken ct);
 }

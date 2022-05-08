@@ -19,6 +19,7 @@ online store backend (REST API + Elastic)
 ## May be sometime (think about realization)
 Facets, search by multiple facets    
 Product stocks in shops  
+Authentication  
 
 ### Entities
 Category:  

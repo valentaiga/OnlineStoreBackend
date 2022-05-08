@@ -26,6 +26,8 @@ public class ProductService : IProductService
         
         dto.Path = (string.IsNullOrEmpty(dto.Path) ? dto.Name : dto.Path)
             .Replace(' ', '_');
+
+        dto.Code = dto.Code.Replace(' ', '_');
     }
 
     public async Task<Result<string>> Create(ProductDto dto, CancellationToken ct)
@@ -33,13 +35,17 @@ public class ProductService : IProductService
         try
         {
             ProcessProductFields(dto);
-            var productExists = await _productRepository.ExistsByPath(dto.Path, ct);
-            if (productExists)
+            var existsByPath = await _productRepository.ExistsByPath(dto.Path, ct);
+            if (existsByPath)
                 return Fail<string>($"Product with path '{dto.Path}' already exists");
 
             var categoryExists = await _categoryRepository.ExistsById(dto.CategoryId, ct); 
             if (!categoryExists)
-                return Fail<string>($"Category with id '{dto.Id}' not found");
+                return Fail<string>($"Category with id '{dto.CategoryId}' not found");
+
+            var existsByCode = await _productRepository.ExistsByCode(dto.Code, ct); 
+            if (!existsByCode)
+                return Fail<string>($"Product with code '{dto.Code}' already exists");
 
             dto.UpdatedAt = DateTime.UtcNow;
             var result = await _productRepository.Create(dto, ct);
@@ -73,9 +79,13 @@ public class ProductService : IProductService
             var productById = await _productRepository.Get(dto.Id, ct);
             if (productById is null) return Fail($"Product with id '{dto.Id}' not found");
             
-            var productExists = dto.Path != productById.Path 
-                                && await _productRepository.Exists(dto.Id, dto.Path, ct);
-            if (!productExists) return Fail($"Product with path '{dto.Id}' already exists");
+            var existsByPath = dto.Path != productById.Path 
+                                && await _productRepository.ExistsByPath(dto.Path, ct);
+            if (!existsByPath) return Fail($"Product with path '{dto.Id}' already exists");
+            
+            var existsByCode = dto.Code != productById.Code
+                               && await _productRepository.ExistsByCode(dto.Path, ct);
+            if (!existsByCode) return Fail($"Product with code '{dto.Code}' already exists");
             
             var categoryExists = await _categoryRepository.ExistsById(dto.CategoryId, ct); 
             if (!categoryExists)
@@ -107,6 +117,20 @@ public class ProductService : IProductService
         {
             _logger.LogError(ex, "Unable to delete product with id '{Id}'", id);
             return Fail(ex.Message);
+        }
+    }
+
+    public async Task<Result<ProductDto[]>> GetAll(CancellationToken ct)
+    {
+        try
+        {
+            var result = await _productRepository.GetAll(ct);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unable to get all products");
+            return Fail<ProductDto[]>(ex.Message);
         }
     }
 }

@@ -9,4 +9,5 @@ public interface IProductService
     Task<Result<ProductDto>> Get(string id, CancellationToken ct);
     Task<Result> Update(ProductDto dto, CancellationToken ct);
     Task<Result> Delete(string id, CancellationToken ct);
+    Task<Result<ProductDto[]>> GetAll(CancellationToken ct);
 }

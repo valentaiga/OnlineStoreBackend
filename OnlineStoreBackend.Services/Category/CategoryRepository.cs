@@ -1,5 +1,6 @@
 ﻿using Nest;
 using OnlineStoreBackend.Abstractions.Models.Category;
+using OnlineStoreBackend.Abstractions.Models.Search;
 using OnlineStoreBackend.Abstractions.Services.Category;
 using OnlineStoreBackend.Services.Extensions;
 
@@ -24,7 +25,7 @@ public class CategoryRepository : ICategoryRepository
     public async Task<CategoryDto> Get(string id, CancellationToken ct)
     {
         var result = await _client.GetAsync<CategoryDto>(id, ct: ct);
-        return result.Source;
+        return result.Source.WithId(result.Id);
     }
 
     public async Task Update(CategoryDto dto, CancellationToken ct)
@@ -59,5 +60,28 @@ public class CategoryRepository : ICategoryRepository
         
         result.EnsureSuccess();
         return result.Total > 0;
+    }
+
+    public async Task<CategoriesSearchResult> Search(string query, int limit, int offset, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<CategoryDto>(x =>
+            x.Query(q =>
+                    q.Match(m =>
+                        m.Field(f => f.Name).Query(query)))
+                .From(offset)
+                .Size(limit)
+            , ct);
+        
+        return new CategoriesSearchResult
+        {
+            Products = result.Hits.Select(x => x.Source.WithId(x.Id)).ToArray(),
+            Total = result.Total
+        };
+    }
+
+    public async Task<CategoryDto[]> GetAll(CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<CategoryDto>(ct: ct);
+        return result.Hits.Select(x => x.Source.WithId(x.Id)).ToArray();
     }
 }

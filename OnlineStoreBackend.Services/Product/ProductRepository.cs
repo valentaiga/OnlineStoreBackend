@@ -1,5 +1,6 @@
 ﻿using Nest;
 using OnlineStoreBackend.Abstractions.Models.Product;
+using OnlineStoreBackend.Abstractions.Models.Search;
 using OnlineStoreBackend.Abstractions.Services.Product;
 using OnlineStoreBackend.Services.Extensions;
 
@@ -24,7 +25,7 @@ public class ProductRepository : IProductRepository
     public async Task<ProductDto> Get(string id, CancellationToken ct)
     {
         var result = await _client.GetAsync<ProductDto>(id, ct: ct);
-        return result.Source;
+        return result.Source.WithId(result.Id);
     }
 
     public async Task Update(ProductDto dto, CancellationToken ct)
@@ -61,6 +62,18 @@ public class ProductRepository : IProductRepository
         return result.Total > 0;
     }
 
+    public async Task<bool> ExistsByCode(string code, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(x =>
+            x.Query(q =>
+                    q.Match(m =>
+                        m.Field(f => f.Code).Query(code)))
+                .Take(0), ct);
+        
+        result.EnsureSuccess();
+        return result.Total > 0;
+    }
+
     public async Task<bool> ExistsByCategoryId(string categoryId, CancellationToken ct)
     {
         var result = await _client.SearchAsync<ProductDto>(x =>
@@ -73,17 +86,40 @@ public class ProductRepository : IProductRepository
         return result.Total > 0;
     }
 
-    public async Task<bool> Exists(string id, string path, CancellationToken ct)
+    public async Task<bool> Exists(string categoryId, string path, CancellationToken ct)
     {
         var result = await _client.SearchAsync<ProductDto>(x =>
             x.Query(q =>
                 q.Match(m =>
-                    m.Field(f => f.Id).Query(id))
+                    m.Field(f => f.CategoryId).Query(categoryId))
                 && q.Match(m =>
                     m.Field(f => f.Path).Query(path)))
                 .Take(0), ct);
         
         result.EnsureSuccess();
         return result.Total > 0;
+    }
+
+    public async Task<ProductsSearchResult> Search(string query, int limit, int offset, CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(x =>
+                x.Query(q =>
+                        q.Match(m =>
+                            m.Field(f => f.Name).Query(query)))
+                    .From(offset)
+                    .Size(limit)
+            , ct);
+
+        return new ProductsSearchResult
+        {
+            Products = result.Hits.Select(x => x.Source.WithId(x.Id)).ToArray(),
+            Total = result.Total
+        };
+    }
+
+    public async Task<ProductDto[]> GetAll(CancellationToken ct)
+    {
+        var result = await _client.SearchAsync<ProductDto>(ct: ct);
+        return result.Hits.Select(x => x.Source.WithId(x.Id)).ToArray();
     }
 }

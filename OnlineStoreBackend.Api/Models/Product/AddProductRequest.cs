@@ -7,4 +7,5 @@ public class AddProductRequest
     public string Path { get; set; }
     public string CategoryId { get; set; }
     public string Code { get; set; }
+    public string Description { get; set; }
 }
