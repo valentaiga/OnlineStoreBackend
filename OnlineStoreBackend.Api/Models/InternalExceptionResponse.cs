@@ -2,6 +2,6 @@
 
 public class InternalExceptionResponse
 {
-    public string ErrorMessage { get; set; }
+    public string Error { get; set; }
     public string Stacktrace { get; set; }
 }

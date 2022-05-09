@@ -36,7 +36,7 @@ public class ExceptionMiddleware
         
         var result = new InternalExceptionResponse
         {
-            ErrorMessage = exception.Message,
+            Error = exception.Message,
             Stacktrace = exception.StackTrace
         };
 

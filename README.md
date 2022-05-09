@@ -11,10 +11,11 @@ online store backend (REST API + Elastic)
 - [x] CRUD: product
 - [x] CRUD: category
 - [ ] ~~Configure automapper~~ no need
-- [ ] Use elastic to search through all products
-- [ ] Create search endpoint to search through products&categories
+- [x] Use elastic to search through all products
+- [x] Create search endpoint to search through products&categories
 - [ ] Add localization (EN by default)
 - [ ] Unit integration tests
+- [x] Add migrator for index creation
 
 ## May be sometime (think about realization)
 Facets, search by multiple facets    
