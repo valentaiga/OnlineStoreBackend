@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nest;
 using OnlineStoreBackend.Migration.Core;
 using OnlineStoreBackend.Migration.Core.Elastic;
-using OnlineStoreBackend.Migration.Migrations;
-using Scrutor;
 
 namespace OnlineStoreBackend.Migration;
 
@@ -13,7 +12,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") is null)
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
         
         using var scope = CreateServices(args).CreateScope();
         await Migrate(scope.ServiceProvider);
@@ -23,6 +22,7 @@ public class Program
     {
         var runner = scope.GetRequiredService<IMigrationRunner>();
         await runner.MigrateDown();
+        await Task.Delay(TimeSpan.FromSeconds(1));
         await runner.MigrateUp();
     }
 
@@ -32,14 +32,17 @@ public class Program
         var elasticUrl = configuration["elasticConfig:Uri"];
         
         return new ServiceCollection()
-            .AddSingleton<IElasticClient>(_ =>
+            .AddSingleton<IElasticClient>(services =>
             {
-                var settings = new ConnectionSettings(new Uri(elasticUrl));
+                var logger = services.GetRequiredService<ILogger<ElasticClient>>();
+                var settings = new ConnectionSettings(new Uri(elasticUrl))
+                    .DisableDirectStreaming() // for detailed logs
+                    .OnRequestCompleted(details => logger.LogInformation($"Request completed. Info:{details.DebugInformation}"));
                 return new ElasticClient(settings);
             })
             .AddSingleton<IMigrationRepository, EsMigrationRepository>()
             .AddSingleton<IMigrationRunner, MigrationRunner>()
-            // .AddSingleton<IMigration, CreateIndexes>()
+            .AddLogging(logBuilder => logBuilder.AddConsole())
             .Scan(scan => scan
                 .FromAssemblyOf<IMigration>()
                 .AddClasses(classes => classes.AssignableTo<IMigration>())

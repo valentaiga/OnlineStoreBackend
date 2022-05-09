@@ -35,7 +35,11 @@ public class CategoryService : ICategoryService
             ProcessCategoryFields(dto);
             var existsByPath = await _categoryRepository.ExistsByPath(dto.Path, ct);
             if (existsByPath) return Fail<string>($"Category with path '{dto.Path}' already exists");
-            
+
+            var parentExistsOrNull = dto.Parent is null
+                                     || await _categoryRepository.ExistsById(dto.Parent, ct);
+            if (!parentExistsOrNull) return Fail<string>($"Parent category with id '{dto.Parent}' does not exists");
+
             dto.UpdatedAt = DateTime.UtcNow;
             var result = await _categoryRepository.Create(dto, ct);
             return Success(result);
@@ -68,12 +72,16 @@ public class CategoryService : ICategoryService
             var categoryById = await _categoryRepository.Get(dto.Id, ct);
             if (categoryById is null) return Fail($"Category with id '{dto.Id}' not found");
             
+            ProcessCategoryFields(dto);
             var categoryExists = dto.Path != categoryById.Path
-                                && await _productRepository.Exists(dto.Id, dto.Path, ct);
-            if (!categoryExists) return Fail($"Category with path '{dto.Path}' alreadyExists");
+                                && await _productRepository.ExistsByPath(dto.Path, ct);
+            if (categoryExists) return Fail($"Category with path '{dto.Path}' already exists");
+            
+            var parentExistsOrNull = dto.Parent is null
+                                     || await _categoryRepository.ExistsById(dto.Parent, ct);
+            if (!parentExistsOrNull) return Fail<string>($"Parent category with id '{dto.Parent}' does not exists");
 
             dto.UpdatedAt = DateTime.UtcNow;
-            ProcessCategoryFields(dto);
             await _categoryRepository.Update(dto, ct);
             return Success();
         }

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using OnlineStoreBackend.Migration.Core.Elastic;
 using OnlineStoreBackend.Migration.Core.Models;
 
 namespace OnlineStoreBackend.Migration.Core;
