@@ -32,7 +32,7 @@ public class TestFixture
         CategoryApiClient = CreateApiClient<CategoryApiClient>();
         ProductApiClient = CreateApiClient<ProductApiClient>();
 
-        Migration.Program.Main(Array.Empty<string>()).GetAwaiter().GetResult();
+        Migration.Program.Main(new[] { "-md" }).GetAwaiter().GetResult();
     }
 
     private TApiClient CreateApiClient<TApiClient>() where TApiClient : ApiClientBase, new()

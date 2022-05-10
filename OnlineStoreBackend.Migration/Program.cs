@@ -9,20 +9,23 @@ namespace OnlineStoreBackend.Migration;
 
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static Task Main(string[] args)
     {
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") is null)
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
         
         using var scope = CreateServices(args).CreateScope();
-        await Migrate(scope.ServiceProvider);
+        return Migrate(scope.ServiceProvider, args);
     }
 
-    private static async Task Migrate(IServiceProvider scope)
+    private static async Task Migrate(IServiceProvider scope, string[] args)
     {
         var runner = scope.GetRequiredService<IMigrationRunner>();
-        await runner.MigrateDown();
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        if (args.Contains("-md"))
+        {
+            await runner.MigrateDown();
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
         await runner.MigrateUp();
     }
 
