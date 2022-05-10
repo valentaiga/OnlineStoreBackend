@@ -1,6 +1,10 @@
 using System;
+using System.Linq;
+using System.Net;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +16,8 @@ using OnlineStoreBackend.Abstractions.Models.Product;
 using OnlineStoreBackend.Abstractions.Services.Category;
 using OnlineStoreBackend.Abstractions.Services.Product;
 using OnlineStoreBackend.Abstractions.Services.Search;
+using OnlineStoreBackend.Api.Models;
+using OnlineStoreBackend.Api.Validators.Category;
 using OnlineStoreBackend.Middlewares;
 using OnlineStoreBackend.Services.Category;
 using OnlineStoreBackend.Services.Product;
@@ -34,6 +40,21 @@ namespace OnlineStoreBackend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            
+            // fluent requests validation
+            services.AddFluentValidation(config 
+                => config.RegisterValidatorsFromAssemblyContaining<AddCategoryValidator>());
+            services.Configure<ApiBehaviorOptions>(options 
+                => options.InvalidModelStateResponseFactory = 
+                (context) =>
+            {
+                var firstError = context!.ModelState.FirstOrDefault().Value!.Errors.FirstOrDefault()!.ErrorMessage;
+                var response = new BadRequestResponse(firstError);
+                return new JsonResult(response)
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest
+                };
+            });
             
             // services
             services.AddScoped<IProductRepository, ProductRepository>();

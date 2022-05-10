@@ -14,8 +14,9 @@
 - [x] CRUD: category
 - [x] Use elastic to search through all products
 - [x] Create search endpoint to search through products & categories
-- [ ] Background job for all products reindex in ES
+- [ ] ~~Background job for all products reindex in ES (I dont know why do I need that yet)~~
 - [ ] Add localization (EN by default)
+- [x] Api requests fluent validation
 - [x] Unit integration tests _(but not products)_
 - [x] Add migrator for index creation
 
