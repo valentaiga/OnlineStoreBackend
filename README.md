@@ -15,9 +15,9 @@
 - [x] Use elastic to search through all products
 - [x] Create search endpoint to search through products & categories
 - [ ] ~~Background job for all products reindex in ES (I dont know why do I need that yet)~~
-- [ ] Add localization (EN by default)
+- [ ] ~~Add localization (no need too, but localization package is ready)~~
 - [x] Api requests fluent validation
-- [x] Unit integration tests _(but not products)_
+- [x] Unit integration tests _(just categories Api)_
 - [x] Add migrator for index creation
 
 ## May be sometime (think about realization)
