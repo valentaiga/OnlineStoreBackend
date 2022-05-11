@@ -3,7 +3,6 @@
 ## Stack: 
 - ElasticSearch (7.17.3)
 - Rest API (.Net 6)
-- ~~PostgreSQL~~ (used ES for categories too)
 - Nest (ES high level client)
 - Xunit 
 - Serilog
